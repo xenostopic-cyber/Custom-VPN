@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UltraVPN Pro — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg0: #070a14; --bg1: #0d1220; --bg2: #121829; --bg3: #1a2238;
+  --border: #1e2d4a; --cyan: #00e5ff; --cyan-dim: rgba(0,229,255,0.1);
+  --green: #00ff88; --red: #ff4466; --amber: #ffaa00;
+  --text: #e2e8f0; --text-dim: #7a8fad; --text-muted: #3a4f6e; --radius: 10px;
+}
+body {
+  min-width: 600px; max-width: 800px; margin: 0 auto;
+  background: var(--bg0); color: var(--text);
+  font-family: 'Rajdhani', sans-serif; font-size: 15px;
+  padding: 40px 32px; line-height: 1.5;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px,
+    rgba(0,229,255,0.008) 2px, rgba(0,229,255,0.008) 4px);
+  pointer-events: none; z-index: 0;
+}
+.wrap { position: relative; z-index: 1; }
+
+.page-header {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 36px; padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.page-title {
+  font-family: 'Orbitron', monospace; font-size: 20px;
+  font-weight: 700; color: var(--cyan); letter-spacing: 0.1em;
+}
+.page-sub { font-size: 13px; color: var(--text-dim); margin-top: 3px; }
+
+.section { margin-bottom: 32px; }
+.section-title {
+  font-family: 'Orbitron', monospace; font-size: 10px;
+  letter-spacing: 0.2em; color: var(--text-dim);
+  text-transform: uppercase; margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: var(--bg2);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+.setting-info { flex: 1; }
+.setting-label { font-size: 15px; font-weight: 600; color: var(--text); }
+.setting-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+.toggle {
+  width: 44px; height: 24px; border-radius: 12px;
+  background: var(--bg3); border: 1px solid var(--border);
+  cursor: pointer; position: relative; transition: all 0.2s;
+}
+.toggle.on { background: var(--cyan); border-color: var(--cyan); }
+.toggle-knob {
+  position: absolute; top: 3px; left: 3px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--text-muted); transition: all 0.2s;
+}
+.toggle.on .toggle-knob { transform: translateX(20px); background: var(--bg0); }
+
+/* ── Mullvad section ── */
+.mullvad-card {
+  background: var(--bg2);
+  border: 1px solid rgba(0,229,255,0.25);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 8px;
+}
+.mullvad-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+}
+.mullvad-logo {
+  font-family: 'Orbitron', monospace; font-size: 14px;
+  font-weight: 700; color: var(--cyan); letter-spacing: 0.12em;
+}
+.mullvad-tagline { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+.account-row {
+  display: flex; gap: 10px; align-items: stretch; margin-bottom: 12px;
+}
+.account-row input {
+  flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  letter-spacing: 0.08em;
+}
+.account-row input::placeholder { letter-spacing: 0; font-family: 'Rajdhani', sans-serif; }
+
+.sync-status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 12px;
+  font-size: 12px;
+}
+.sync-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text-muted); margin-right: 8px;
+  display: inline-block; flex-shrink: 0;
+}
+.sync-dot.ok     { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.sync-dot.error  { background: var(--red); }
+.sync-dot.syncing { background: var(--cyan); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+.sync-text { color: var(--text-dim); flex: 1; }
+.sync-text strong { color: var(--text); }
+.sync-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.relay-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin-bottom: 12px;
+}
+.relay-stat-box {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; text-align: center;
+}
+.relay-stat-num {
+  font-family: 'Orbitron', monospace; font-size: 18px;
+  font-weight: 700; color: var(--cyan);
+}
+.relay-stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.info-box {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  font-size: 13px; color: var(--text-dim); line-height: 1.7;
+  margin-bottom: 8px;
+}
+.info-box strong { color: var(--text); }
+.info-box code {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  background: var(--bg3); padding: 2px 6px; border-radius: 4px; color: var(--cyan);
+}
+.warning-box {
+  background: rgba(255,170,0,0.06); border: 1px solid rgba(255,170,0,0.3);
+  border-radius: var(--radius); padding: 12px 16px;
+  font-size: 13px; color: var(--amber); margin-bottom: 8px;
+}
+.tip-box {
+  background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2);
+  border-radius: var(--radius); padding: 12px 16px;
+  font-size: 13px; color: var(--text-dim); line-height: 1.6;
+}
+.tip-box a { color: var(--cyan); text-decoration: none; }
+.tip-box a:hover { text-decoration: underline; }
+
+select, input[type=text], input[type=number], input[type=password] {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 7px; padding: 8px 12px;
+  font-family: 'Rajdhani', sans-serif; font-size: 14px;
+  color: var(--text); outline: none; transition: border-color 0.2s;
+}
+select:focus, input:focus { border-color: var(--cyan); }
+select option { background: var(--bg2); }
+
+.save-btn {
+  padding: 10px 24px; background: var(--cyan); color: var(--bg0);
+  border: none; border-radius: 7px;
+  font-family: 'Orbitron', monospace; font-size: 10px;
+  font-weight: 700; letter-spacing: 0.12em;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.save-btn:hover { filter: brightness(1.15); }
+.save-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+
+.secondary-btn {
+  padding: 10px 18px; background: var(--bg3); color: var(--text);
+  border: 1px solid var(--border); border-radius: 7px;
+  font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.secondary-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.secondary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.badge {
+  display: inline-block; padding: 3px 8px; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  font-weight: 600; letter-spacing: 0.08em;
+}
+.badge-cyan  { background: var(--cyan-dim); border: 1px solid rgba(0,229,255,0.3); color: var(--cyan); }
+.badge-green { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--green); }
+
+.protocol-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px;
+}
+.proto-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px;
+  cursor: pointer; transition: all 0.2s;
+}
+.proto-card.active { border-color: var(--cyan); background: var(--cyan-dim); }
+.proto-card:hover  { border-color: var(--cyan); }
+.proto-name {
+  font-family: 'Orbitron', monospace; font-size: 11px;
+  font-weight: 700; color: var(--cyan); letter-spacing: 0.1em; margin-bottom: 4px;
+}
+.proto-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+.clear-btn {
+  padding: 10px 24px; background: transparent;
+  border: 1px solid var(--red); color: var(--red);
+  border-radius: 7px; font-family: 'Rajdhani', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.clear-btn:hover { background: rgba(255,68,102,0.1); }
+
+#toast {
+  position: fixed; bottom: 20px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 20px;
+  font-size: 13px; font-weight: 600;
+  opacity: 0; transition: all 0.3s; z-index: 999;
+  color: var(--text); white-space: nowrap;
+}
+#toast.show    { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.success { border-color: var(--green); color: var(--green); }
+#toast.error   { border-color: var(--red);   color: var(--red); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="page-header">
+    <svg viewBox="0 0 40 40" fill="none" style="width:40px;height:40px">
+      <circle cx="20" cy="20" r="18" stroke="#00e5ff" stroke-width="1.5" opacity="0.4"/>
+      <path d="M20 5 L31 12 L31 25 L20 33 L9 25 L9 12 Z"
+            fill="rgba(0,229,255,0.1)" stroke="#00e5ff" stroke-width="1.5"/>
+      <rect x="16" y="20" width="8" height="10" rx="1.5" fill="#00e5ff"/>
+      <path d="M16 20 Q16 14 20 14 Q24 14 24 20" stroke="#00e5ff" stroke-width="2" fill="none"/>
+    </svg>
+    <div>
+      <div class="page-title">ULTRAVPN PRO — SETTINGS</div>
+      <div class="page-sub">Advanced configuration · v2.1.0</div>
+    </div>
+  </div>
+
+  <!-- ── Mullvad Integration ────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Mullvad Integration <span class="badge badge-cyan">LIVE SERVERS</span></div>
+
+    <div class="mullvad-card">
+      <div class="mullvad-header">
+        <svg viewBox="0 0 32 32" fill="none" style="width:32px;height:32px;flex-shrink:0">
+          <circle cx="16" cy="16" r="14" fill="rgba(0,229,255,0.08)" stroke="#00e5ff" stroke-width="1.2"/>
+          <path d="M16 5 L24 10 V20 L16 26 L8 20 V10 Z"
+                fill="rgba(0,229,255,0.15)" stroke="#00e5ff" stroke-width="1.2"/>
+          <circle cx="16" cy="16" r="3.5" fill="#00e5ff"/>
+        </svg>
+        <div>
+          <div class="mullvad-logo">MULLVAD VPN</div>
+          <div class="mullvad-tagline">Live relay API · Real server IPs · Auto-refreshed every 6h</div>
+        </div>
+      </div>
+
+      <!-- Sync status bar -->
+      <div class="sync-status-bar">
+        <span class="sync-dot" id="syncDot"></span>
+        <div style="flex:1">
+          <div class="sync-text" id="syncText">Checking relay cache…</div>
+          <div class="sync-meta" id="syncMeta"></div>
+        </div>
+        <button class="secondary-btn" id="refreshRelaysBtn" onclick="triggerRelayRefresh()">
+          ↺ Refresh
+        </button>
+      </div>
+
+      <!-- Relay stats -->
+      <div class="relay-stats">
+        <div class="relay-stat-box">
+          <div class="relay-stat-num" id="statCountries">—</div>
+          <div class="relay-stat-label">Countries</div>
+        </div>
+        <div class="relay-stat-box">
+          <div class="relay-stat-num" id="statServers">—</div>
+          <div class="relay-stat-label">Total Relays</div>
+        </div>
+        <div class="relay-stat-box">
+          <div class="relay-stat-num" id="statBridges">—</div>
+          <div class="relay-stat-label">SOCKS5 Bridges</div>
+        </div>
+      </div>
+
+      <!-- Account number -->
+      <div style="margin-bottom:4px">
+        <div class="setting-label" style="margin-bottom:6px">Mullvad Account Number</div>
+        <div class="account-row">
+          <input type="password" id="mullvadAccount" placeholder="e.g. 1234567890123456"
+                 autocomplete="off" spellcheck="false"
+                 oninput="onAccountInput()" />
+          <button class="save-btn" onclick="saveAccount()">SAVE</button>
+          <button class="secondary-btn" id="showAccountBtn" onclick="toggleAccountVisibility()">Show</button>
+        </div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:4px">
+          Your 16-digit Mullvad account number. Required for SOCKS5 authentication.
+          <a href="https://mullvad.net/account/create" target="_blank"
+             style="color:var(--cyan);text-decoration:none;">Create an account →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-top:8px">
+      <strong>How it works:</strong><br>
+      UltraVPN Pro fetches Mullvad's public relay list from <code>api.mullvad.net/www/relays/all/</code>
+      and caches it locally for 6 hours. When you connect to a country, it picks the best available
+      <strong>bridge server</strong> (Mullvad's native SOCKS5 relay type) for that country.
+      Your Mullvad account number is used for SOCKS5 authentication — it's stored locally and
+      never transmitted anywhere except to the Mullvad proxy server at connection time.<br><br>
+      <strong>Bridge servers</strong> are Mullvad's dedicated SOCKS5 proxy endpoints.
+      When available for a country they appear as <span style="color:var(--cyan)">⬡ N</span>
+      next to the country name in the server list.
+    </div>
+    <div class="warning-box">
+      ⚠️ A valid Mullvad subscription is required. This extension routes only
+      <strong>browser traffic</strong> through the proxy — for system-wide VPN use the Mullvad desktop app.
+    </div>
+  </div>
+
+  <!-- ── General ──────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">General</div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Auto-connect on startup</div>
+        <div class="setting-desc">Automatically connect to last server when Chrome starts</div>
+      </div>
+      <div class="toggle" id="tog-autoConnect" onclick="toggleSetting('autoConnect')">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Show notifications</div>
+        <div class="setting-desc">Display connect/disconnect notifications</div>
+      </div>
+      <div class="toggle on" id="tog-notifications" onclick="toggleSetting('notifications')">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">Bypass local network</div>
+        <div class="setting-desc">Always bypass localhost, 127.0.0.1 and local addresses</div>
+      </div>
+      <div class="toggle on" id="tog-bypassLocal" onclick="toggleSetting('bypassLocal')">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Default Protocol ─────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Default Protocol</div>
+    <div class="protocol-grid">
+      <div class="proto-card active" onclick="selectProtocol('socks5', this)">
+        <div class="proto-name">SOCKS5 <span class="badge badge-green">RECOMMENDED</span></div>
+        <div class="proto-desc">Full TCP/UDP support. Used by Mullvad bridge servers. Fastest and most compatible.</div>
+      </div>
+      <div class="proto-card" onclick="selectProtocol('https', this)">
+        <div class="proto-name">HTTPS <span class="badge badge-cyan">SECURE</span></div>
+        <div class="proto-desc">Encrypted HTTP tunnel. Good for restrictive networks. Not used for Mullvad.</div>
+      </div>
+      <div class="proto-card" onclick="selectProtocol('socks4', this)">
+        <div class="proto-name">SOCKS4</div>
+        <div class="proto-desc">Legacy TCP-only. For custom servers only.</div>
+      </div>
+      <div class="proto-card" onclick="selectProtocol('http', this)">
+        <div class="proto-name">HTTP</div>
+        <div class="proto-desc">Basic proxy. Use only if other options are unavailable.</div>
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveSettings()">SAVE PROTOCOL</button>
+  </div>
+
+  <!-- ── DNS & Privacy ────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">DNS & Privacy</div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label">DNS over HTTPS (DoH)</div>
+        <div class="setting-desc">Uses Chrome's built-in secure DNS — works independently of proxy</div>
+      </div>
+      <div class="toggle" id="tog-doh" onclick="toggleSetting('doh')">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+    <div class="tip-box">
+      💡 For best DNS leak protection, combine UltraVPN Pro with Chrome's
+      <a href="chrome://settings/security" target="_blank">Secure DNS setting</a>
+      (Settings → Privacy → Security → Use secure DNS).
+    </div>
+  </div>
+
+  <!-- ── Data & Reset ──────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Data & Reset</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="save-btn" onclick="exportConfig()">EXPORT CONFIG</button>
+      <button class="save-btn" onclick="document.getElementById('importFile').click()"
+              style="background:var(--bg3);color:var(--text);border:1px solid var(--border);">
+        IMPORT CONFIG
+      </button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importConfig(this)">
+      <button class="clear-btn" onclick="clearData()">CLEAR ALL DATA</button>
+    </div>
+  </div>
+
+</div>
+<div id="toast"></div>
+
+<script>
+let settings = {
+  autoConnect: false, notifications: true, bypassLocal: true,
+  doh: false, defaultProtocol: 'socks5', mullvadAccount: '',
+};
+let selectedProtocol = 'socks5';
+
+// ── Load ──────────────────────────────────────────────
+async function load() {
+  const data = await chrome.storage.local.get('settings');
+  if (data.settings) {
+    settings = { ...settings, ...data.settings };
+    selectedProtocol = settings.defaultProtocol || 'socks5';
+  }
+  applyUI();
+  await loadRelayStats();
+}
+
+function applyUI() {
+  ['autoConnect','notifications','bypassLocal','doh'].forEach(k => {
+    const el = document.getElementById(`tog-${k}`);
+    if (el) el.classList.toggle('on', !!settings[k]);
+  });
+
+  // Populate account field (masked)
+  const acc = document.getElementById('mullvadAccount');
+  if (acc && settings.mullvadAccount) {
+    acc.value = settings.mullvadAccount;
+  }
+
+  // Highlight active protocol card
+  document.querySelectorAll('.proto-card').forEach(card => {
+    card.classList.remove('active');
+  });
+  const protoCards = document.querySelectorAll('.proto-card');
+  const protocols  = ['socks5','https','socks4','http'];
+  const idx        = protocols.indexOf(selectedProtocol);
+  if (protoCards[idx]) protoCards[idx].classList.add('active');
+}
+
+// ── Relay stats ────────────────────────────────────────
+
+// FIX #9 — When forceRefresh=true the old code called 'refreshRelays'
+// which returns { success, cached, ts, ageLabel, countryCount,
+// serverCount, bridgeCount } — there is NO 'relays' property.
+// So `result.relays` was always undefined → relays = {} → countryCount = 0
+// → the function threw 'Relay list is empty' on every manual refresh click.
+//
+// Fix: always use 'getRelays' to get the relay map with actual data.
+// When a force refresh is needed, first call 'refreshRelays' to bust
+// the background cache, then call 'getRelays' to retrieve the fresh data.
+function sendMessage(action) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage({ action }, r => {
+      if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+      else resolve(r);
+    });
+  });
+}
+
+async function loadRelayStats(forceRefresh = false) {
+  const dot    = document.getElementById('syncDot');
+  const text   = document.getElementById('syncText');
+  const meta   = document.getElementById('syncMeta');
+  const btn    = document.getElementById('refreshRelaysBtn');
+
+  dot.className  = 'sync-dot syncing';
+  text.innerHTML = 'Fetching relay list from Mullvad API…';
+  if (btn) btn.disabled = true;
+
+  try {
+    // If a force refresh is requested, bust the cache in the background
+    // first. Errors here are non-fatal — fall through to getRelays anyway.
+    if (forceRefresh) {
+      try { await sendMessage('refreshRelays'); } catch (_) {}
+    }
+
+    // Always use getRelays to retrieve the actual relay map
+    const result = await sendMessage('getRelays');
+
+    const relays  = result.relays  || {};
+    const ts      = result.ts      || null;
+    const cached  = result.cached  !== false;
+
+    const countryCount = Object.keys(relays).length;
+    const serverCount  = Object.values(relays).reduce((n, e) => n + (e.all?.length  || 0), 0);
+    const bridgeCount  = Object.values(relays).reduce((n, e) => n + (e.bridge?.length || 0), 0);
+
+    document.getElementById('statCountries').textContent = countryCount || '—';
+    document.getElementById('statServers').textContent   = serverCount  || '—';
+    document.getElementById('statBridges').textContent   = bridgeCount  || '—';
+
+    if (countryCount > 0) {
+      dot.className  = 'sync-dot ok';
+      const age      = formatAge(ts);
+      text.innerHTML = `<strong>${serverCount.toLocaleString()} relays</strong> across
+                        <strong>${countryCount} countries</strong> — ${cached ? 'cached' : 'just fetched'}`;
+      meta.textContent = `Updated ${age} · ${bridgeCount} SOCKS5 bridge servers available`;
+    } else {
+      throw new Error('Relay list is empty');
+    }
+  } catch (err) {
+    dot.className    = 'sync-dot error';
+    text.innerHTML   = `<span style="color:var(--red)">Failed to load relay list</span>`;
+    meta.textContent = err.message;
+  } finally {
+    if (btn) { btn.disabled = false; }
+  }
+}
+
+async function triggerRelayRefresh() {
+  const btn = document.getElementById('refreshRelaysBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⟳'; }
+  await loadRelayStats(true);
+  if (btn) { btn.disabled = false; btn.textContent = '↺ Refresh'; }
+}
+
+function formatAge(ts) {
+  if (!ts) return 'never';
+  const m = Math.floor((Date.now() - ts) / 60000);
+  if (m < 2)  return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+// ── Account ────────────────────────────────────────────
+function onAccountInput() {
+  // Strip anything that isn't a digit or letter (account numbers are numeric)
+  const inp = document.getElementById('mullvadAccount');
+  inp.value = inp.value.replace(/[^0-9]/g, '').slice(0, 16);
+}
+
+async function saveAccount() {
+  const account = document.getElementById('mullvadAccount').value.trim();
+  if (account && account.length < 10) {
+    showToast('Account number looks too short — check it again', 'error');
+    return;
+  }
+  settings.mullvadAccount = account;
+  await chrome.storage.local.set({ settings });
+  showToast(account ? 'Account saved ✓' : 'Account cleared', 'success');
+}
+
+function toggleAccountVisibility() {
+  const inp = document.getElementById('mullvadAccount');
+  const btn = document.getElementById('showAccountBtn');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.textContent = 'Hide';
+  } else {
+    inp.type = 'password';
+    btn.textContent = 'Show';
+  }
+}
+
+// ── Settings ───────────────────────────────────────────
+function toggleSetting(key) {
+  settings[key] = !settings[key];
+  const el = document.getElementById(`tog-${key}`);
+  if (el) el.classList.toggle('on', settings[key]);
+  chrome.storage.local.set({ settings });
+  showToast('Setting saved', 'success');
+}
+
+function selectProtocol(proto, card) {
+  selectedProtocol = proto;
+  document.querySelectorAll('.proto-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+}
+
+async function saveSettings() {
+  settings.defaultProtocol = selectedProtocol;
+  await chrome.storage.local.set({ settings });
+  showToast('Settings saved!', 'success');
+}
+
+// ── Export / Import / Clear ────────────────────────────
+async function exportConfig() {
+  const data = await chrome.storage.local.get(['settings','savedServers','favorites']);
+  // Strip account from export for security
+  const exportData = { ...data, settings: { ...data.settings, mullvadAccount: '' } };
+  const json = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url; a.download = 'ultravpn-config.json'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Config exported (account number excluded for security)', 'success');
+}
+
+async function importConfig(input) {
+  const file = input.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (data.settings)     await chrome.storage.local.set({ settings: data.settings });
+    if (data.savedServers) await chrome.storage.local.set({ savedServers: data.savedServers });
+    if (data.favorites)    await chrome.storage.local.set({ favorites: data.favorites });
+    await load();
+    showToast('Config imported!', 'success');
+  } catch (e) {
+    showToast('Invalid config file', 'error');
+  }
+}
+
+async function clearData() {
+  if (!confirm('Clear all UltraVPN data? This removes saved servers, favorites, and settings.\nYour Mullvad account number will also be cleared.')) return;
+  await chrome.storage.local.clear();
+  await load();
+  showToast('Data cleared', 'success');
+}
+
+// ── Toast ──────────────────────────────────────────────
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `show ${type}`;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.className = ''; }, 2800);
+}
+
+load();
+</script>
+</body>
+</html>
